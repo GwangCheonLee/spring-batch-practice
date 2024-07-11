@@ -15,22 +15,33 @@ import org.springframework.transaction.PlatformTransactionManager;
 @Slf4j
 @Configuration
 public class SimpleJobConfiguration {
-    @Bean
-    public Job simpleJob1(JobRepository jobRepository, Step simpleStep1) {
-        return new JobBuilder("simpleJob", jobRepository)
-                .start(simpleStep1)
+
+    // sampleJob을 정의하는 메소드입니다. 이 메소드는 Spring Batch 작업을 구성합니다.
+    @Bean("sampleJob")
+    public Job configureSampleJob(JobRepository jobRepository, Step sampleStep) {
+        log.info(">>>>> sampleJob 정의");
+        return new JobBuilder("sampleJob", jobRepository)
+                .start(sampleStep) // sampleStep을 시작 단계로 설정합니다.
+                .build();
+
+    }
+
+    // sampleStep을 정의하는 메소드입니다. 이 메소드는 작업의 단계를 구성합니다.
+    @Bean("sampleStep")
+    public Step configureSampleStep(JobRepository jobRepository, Tasklet sampleTasklet, PlatformTransactionManager platformTransactionManager) {
+        log.info(">>>>> sampleStep 정의");
+        return new StepBuilder("sampleStep", jobRepository)
+                .tasklet(sampleTasklet, platformTransactionManager) // sampleTasklet을 단계의 태스클릿으로 설정합니다.
                 .build();
     }
-    @Bean
-    public Step simpleStep1(JobRepository jobRepository, Tasklet testTasklet, PlatformTransactionManager platformTransactionManager){
-        return new StepBuilder("simpleStep1", jobRepository)
-                .tasklet(testTasklet, platformTransactionManager).build();
-    }
-    @Bean
-    public Tasklet testTasklet(){
-        return ((contribution, chunkContext) -> {
-            log.info(">>>>> This is Step1");
-            return RepeatStatus.FINISHED;
-        });
+
+    // sampleTasklet을 정의하는 메소드입니다. 이 태스클릿은 실제 작업을 수행합니다.
+    @Bean("sampleTasklet")
+    public Tasklet configureSampleTasklet() {
+        log.info(">>>>> sampleTasklet 정의");
+        return (contribution, chunkContext) -> {
+            log.info(">>>>> sampleTasklet 실행");
+            return RepeatStatus.FINISHED; // 작업이 완료되었음을 나타냅니다.
+        };
     }
 }
