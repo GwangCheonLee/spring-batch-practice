@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.tasklet.Tasklet;
@@ -22,6 +23,7 @@ public class SimpleJobConfiguration {
         log.info(">>>>> sampleJob 정의");
         return new JobBuilder("sampleJob", jobRepository)
                 .start(sampleStep) // sampleStep을 시작 단계로 설정합니다.
+                .incrementer(new RunIdIncrementer())
                 .build();
 
     }
@@ -41,6 +43,8 @@ public class SimpleJobConfiguration {
         log.info(">>>>> sampleTasklet 정의");
         return (contribution, chunkContext) -> {
             log.info(">>>>> sampleTasklet 실행");
+            Thread.sleep(5000);
+            log.info(">>>>> sampleTasklet 종료");
             return RepeatStatus.FINISHED; // 작업이 완료되었음을 나타냅니다.
         };
     }
