@@ -1,4 +1,4 @@
-package com.example.springbatchpractice.quartz;
+package com.example.springbatchpractice.quartz.job;
 
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;

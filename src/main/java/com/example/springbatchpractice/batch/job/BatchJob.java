@@ -1,5 +1,6 @@
-package com.example.springbatchpractice.job;
+package com.example.springbatchpractice.batch.job;
 
+import com.example.springbatchpractice.another.repositories.AnotherRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -15,7 +16,13 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 @Slf4j
 @Configuration
-public class SimpleJobConfiguration {
+public class BatchJob {
+
+    private final AnotherRepository anotherRepository;
+
+    BatchJob(AnotherRepository secondUserRepository) {
+        this.anotherRepository = secondUserRepository;
+    }
 
     // sampleJob을 정의하는 메소드입니다. 이 메소드는 Spring Batch 작업을 구성합니다.
     @Bean("sampleJob")
@@ -39,10 +46,11 @@ public class SimpleJobConfiguration {
 
     // sampleTasklet을 정의하는 메소드입니다. 이 태스클릿은 실제 작업을 수행합니다.
     @Bean("sampleTasklet")
-    public Tasklet configureSampleTasklet() {
+    public Tasklet cCnfigureSampleTasklet() {
         log.info(">>>>> sampleTasklet 정의");
         return (contribution, chunkContext) -> {
             log.info(">>>>> sampleTasklet 실행");
+            this.anotherRepository.findAll().forEach(user -> log.info(user.toString()));
             Thread.sleep(5000);
             log.info(">>>>> sampleTasklet 종료");
             return RepeatStatus.FINISHED; // 작업이 완료되었음을 나타냅니다.
