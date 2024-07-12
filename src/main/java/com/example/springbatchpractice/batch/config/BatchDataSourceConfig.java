@@ -2,6 +2,7 @@ package com.example.springbatchpractice.batch.config;
 
 import jakarta.persistence.EntityManagerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
@@ -22,14 +23,26 @@ import javax.sql.DataSource;
 )
 public class BatchDataSourceConfig {
 
+    @Value("${spring.datasource.batch.url}")
+    private String batchDbUrl;
+
+    @Value("${spring.datasource.batch.username}")
+    private String batchDbUsername;
+
+    @Value("${spring.datasource.batch.password}")
+    private String batchDbPassword;
+
+    @Value("${spring.datasource.batch.driver-class-name}")
+    private String batchDbDriverClassName;
+
     @Primary
     @Bean(name = "batchDataSource")
     public DataSource batchDataSource() {
         return DataSourceBuilder.create()
-                .driverClassName("org.postgresql.Driver")
-                .url("jdbc:postgresql://localhost:5432/batch")
-                .username("postgres")
-                .password("postgrespw")
+                .driverClassName(batchDbDriverClassName)
+                .url(batchDbUrl)
+                .username(batchDbUsername)
+                .password(batchDbPassword)
                 .build();
     }
 

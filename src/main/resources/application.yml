@@ -4,7 +4,7 @@ spring:
 
   datasource:
     batch:
-      url: ${BATCH_DATABASE_DRIVER}
+      url: ${BATCH_DATABASE_URL}
       username: ${BATCH_DATABASE_USERNAME}
       password: ${BATCH_DATABASE_PASSWORD}
       driver-class-name: ${BATCH_DATABASE_DRIVER}

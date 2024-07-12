@@ -2,6 +2,7 @@ package com.example.springbatchpractice.another.config;
 
 import jakarta.persistence.EntityManagerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
@@ -21,13 +22,25 @@ import javax.sql.DataSource;
 )
 public class AnotherDataSourceConfig {
 
+    @Value("${spring.datasource.another.url}")
+    private String anotherDbUrl;
+
+    @Value("${spring.datasource.another.username}")
+    private String anotherDbUsername;
+
+    @Value("${spring.datasource.another.password}")
+    private String anotherDbPassword;
+
+    @Value("${spring.datasource.another.driver-class-name}")
+    private String anotherDbDriverClassName;
+
     @Bean(name = "anotherDataSource")
     public DataSource anotherDataSource() {
         return DataSourceBuilder.create()
-                .driverClassName("org.postgresql.Driver")
-                .url("jdbc:postgresql://localhost:5432/postgres")
-                .username("postgres")
-                .password("postgrespw")
+                .driverClassName(anotherDbDriverClassName)
+                .url(anotherDbUrl)
+                .username(anotherDbUsername)
+                .password(anotherDbPassword)
                 .build();
     }
 
