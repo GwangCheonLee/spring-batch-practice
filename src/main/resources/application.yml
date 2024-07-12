@@ -1,0 +1,33 @@
+spring:
+  config:
+    import: optional:file:.env[.properties]
+
+  datasource:
+    primary:
+      url: ${PRIMARY_DATABASE_DRIVER}
+      username: ${PRIMARY_DATABASE_USERNAME}
+      password: ${PRIMARY_DATABASE_PASSWORD}
+      driver-class-name: ${PRIMARY_DATABASE_DRIVER}
+
+    secondary:
+      url: ${SECONDARY_DATABASE_URL}
+      username: ${SECONDARY_DATABASE_USERNAME}
+      password: ${SECONDARY_DATABASE_PASSWORD}
+      driver-class-name: ${SECONDARY_DATABASE_DRIVER}
+
+  quartz:
+    job-store-type: jdbc
+    jdbc:
+      initialize-schema: always
+    properties:
+      org:
+        quartz:
+          jobStore:
+            driverDelegateClass: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
+            useProperties: false
+
+  batch:
+    job:
+      enabled: false
+    jdbc:
+      initialize-schema: always
