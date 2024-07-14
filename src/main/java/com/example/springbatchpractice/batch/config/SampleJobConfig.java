@@ -1,4 +1,4 @@
-package com.example.springbatchpractice.batch.job;
+package com.example.springbatchpractice.batch.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Slf4j
 @Configuration
-public class SampleJob {
+public class SampleJobConfig {
 
     @Bean("sampleJob")
     public Job configureSampleJob(JobRepository jobRepository, Step sampleStep) {
