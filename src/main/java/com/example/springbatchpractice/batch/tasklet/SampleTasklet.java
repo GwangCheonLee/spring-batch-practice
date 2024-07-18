@@ -1,7 +1,7 @@
 package com.example.springbatchpractice.batch.tasklet;
 
 import com.example.springbatchpractice.another.entities.Another;
-import com.example.springbatchpractice.another.repositories.AnotherRepository;
+import com.example.springbatchpractice.another.repositories.AnotherRepositorySupport;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
@@ -13,9 +13,9 @@ import java.util.List;
 @Component
 public class SampleTasklet implements Tasklet {
 
-    private final AnotherRepository anotherRepository;
+    private final AnotherRepositorySupport anotherRepository;
 
-    public SampleTasklet(AnotherRepository anotherRepository) {
+    public SampleTasklet(AnotherRepositorySupport anotherRepository) {
         this.anotherRepository = anotherRepository;
     }
 

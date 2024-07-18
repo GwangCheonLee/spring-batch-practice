@@ -11,11 +11,11 @@ import java.util.List;
 import static com.example.springbatchpractice.another.entities.QAnother.another;
 
 @Repository
-public class AnotherRepository {
+public class AnotherRepositorySupport {
 
     private final JPAQueryFactory jpaQueryFactory;
 
-    public AnotherRepository(@Qualifier("anotherJpaQueryFactory") JPAQueryFactory jpaQueryFactory) {
+    public AnotherRepositorySupport(@Qualifier("anotherJpaQueryFactory") JPAQueryFactory jpaQueryFactory) {
         this.jpaQueryFactory = jpaQueryFactory;
     }
 
