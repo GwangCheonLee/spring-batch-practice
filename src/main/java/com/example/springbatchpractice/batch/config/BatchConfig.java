@@ -11,12 +11,20 @@ import org.springframework.context.annotation.Configuration;
 
 @Slf4j
 @Configuration
-public class SampleJobConfig {
+public class BatchConfig {
 
     @Bean("sampleJob")
     public Job configureSampleJob(JobRepository jobRepository, Step sampleStep) {
         return new JobBuilder("sampleJob", jobRepository)
                 .start(sampleStep)
+                .incrementer(new RunIdIncrementer())
+                .build();
+    }
+
+    @Bean("anotherJob")
+    public Job anotherJob(JobRepository jobRepository, Step anotherStep) {
+        return new JobBuilder("anotherJob", jobRepository)
+                .start(anotherStep)
                 .incrementer(new RunIdIncrementer())
                 .build();
     }

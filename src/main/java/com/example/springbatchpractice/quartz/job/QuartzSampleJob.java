@@ -10,12 +10,12 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 @Component
-public class QuartzJob implements Job {
+public class QuartzSampleJob implements Job {
 
     private final JobLauncher jobLauncher;
     private final org.springframework.batch.core.Job batchJob;
 
-    public QuartzJob(JobLauncher jobLauncher, @Qualifier("sampleJob") org.springframework.batch.core.Job batchJob) {
+    public QuartzSampleJob(JobLauncher jobLauncher, @Qualifier("sampleJob") org.springframework.batch.core.Job batchJob) {
         this.jobLauncher = jobLauncher;
         this.batchJob = batchJob;
     }

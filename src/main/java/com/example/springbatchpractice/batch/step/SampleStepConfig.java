@@ -11,10 +11,10 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 @Slf4j
 @Configuration
-public class SampleStep {
+public class SampleStepConfig {
 
     @Bean
-    public Step configureSampleStep(JobRepository jobRepository, Tasklet sampleTasklet, PlatformTransactionManager platformTransactionManager) {
+    public Step sampleStep(JobRepository jobRepository, Tasklet sampleTasklet, PlatformTransactionManager platformTransactionManager) {
         return new StepBuilder("sampleStep", jobRepository)
                 .tasklet(sampleTasklet, platformTransactionManager)
                 .build();
