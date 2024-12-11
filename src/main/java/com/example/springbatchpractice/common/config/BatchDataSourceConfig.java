@@ -1,6 +1,7 @@
-package com.example.springbatchpractice.batch.config;
+package com.example.springbatchpractice.common.config;
 
 import jakarta.persistence.EntityManagerFactory;
+import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.jdbc.DataSourceBuilder;
@@ -13,13 +14,11 @@ import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import javax.sql.DataSource;
-
 @Configuration
 @EnableJpaRepositories(
-        basePackages = "com.example.springbatchpractice.batch",
-        entityManagerFactoryRef = "batchEntityManagerFactory",
-        transactionManagerRef = "batchTransactionManager"
+    basePackages = "com.example.springbatchpractice.batch",
+    entityManagerFactoryRef = "batchEntityManagerFactory",
+    transactionManagerRef = "batchTransactionManager"
 )
 public class BatchDataSourceConfig {
 
@@ -39,29 +38,29 @@ public class BatchDataSourceConfig {
     @Bean(name = "batchDataSource")
     public DataSource batchDataSource() {
         return DataSourceBuilder.create()
-                .driverClassName(batchDbDriverClassName)
-                .url(batchDbUrl)
-                .username(batchDbUsername)
-                .password(batchDbPassword)
-                .build();
+            .driverClassName(batchDbDriverClassName)
+            .url(batchDbUrl)
+            .username(batchDbUsername)
+            .password(batchDbPassword)
+            .build();
     }
 
     @Primary
     @Bean(name = "batchEntityManagerFactory")
     public LocalContainerEntityManagerFactoryBean batchEntityManagerFactory(
-            EntityManagerFactoryBuilder builder,
-            @Qualifier("batchDataSource") DataSource dataSource) {
+        EntityManagerFactoryBuilder builder,
+        @Qualifier("batchDataSource") DataSource dataSource) {
         return builder
-                .dataSource(dataSource)
-                .packages("com.example.springbatchpractice.batch.entities")
-                .persistenceUnit("batch")
-                .build();
+            .dataSource(dataSource)
+            .packages("com.example.springbatchpractice.batch")
+            .persistenceUnit("batch")
+            .build();
     }
 
     @Primary
     @Bean(name = "batchTransactionManager")
     public PlatformTransactionManager batchTransactionManager(
-            @Qualifier("batchEntityManagerFactory") EntityManagerFactory batchEntityManagerFactory) {
+        @Qualifier("batchEntityManagerFactory") EntityManagerFactory batchEntityManagerFactory) {
         return new JpaTransactionManager(batchEntityManagerFactory);
     }
 }
