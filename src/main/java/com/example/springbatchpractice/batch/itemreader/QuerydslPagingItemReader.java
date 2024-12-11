@@ -5,43 +5,59 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityTransaction;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Function;
 import lombok.Setter;
 import org.springframework.batch.item.database.AbstractPagingItemReader;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.CollectionUtils;
 
 /**
- * Querydsl을 기반으로 한 Spring Batch의 페이징 ItemReader 구현 클래스.
+ * Querydsl 기반의 Spring Batch 페이징 ItemReader 구현체입니다.
  *
  * @param <T> 읽어올 데이터의 타입
  */
 public class QuerydslPagingItemReader<T> extends AbstractPagingItemReader<T> {
 
     /**
-     * EntityManagerFactory를 통해 EntityManager를 생성.
+     * JPA 속성을 설정하기 위한 맵입니다.
      */
-    private final EntityManagerFactory entityManagerFactory;
+    protected final Map<String, Object> jpaPropertyMap = new HashMap<>();
 
     /**
-     * Querydsl JPAQuery를 생성하는 함수.
+     * EntityManagerFactory를 통해 EntityManager를 생성합니다.
      */
-    private final Function<JPAQueryFactory, JPAQuery<T>> queryFunction;
+    protected EntityManagerFactory entityManagerFactory;
 
     /**
-     * 데이터베이스와의 작업을 수행하는 JPA EntityManager.
+     * 데이터베이스 작업을 수행할 EntityManager입니다.
      */
-    private EntityManager entityManager;
+    protected EntityManager entityManager;
 
     /**
-     * 트랜잭션 활성화 여부 설정 (기본값: false).
+     * Querydsl JPAQuery를 생성하는 함수입니다.
+     */
+    protected Function<JPAQueryFactory, JPAQuery<T>> queryFunction;
+
+    /**
+     * 트랜잭션 활성화 여부를 설정합니다. 기본값은 false입니다.
      */
     @Setter
-    private boolean transacted = false;
+    protected boolean transacted = false; // default value
 
     /**
-     * QuerydslPagingItemReader의 생성자.
+     * 기본 생성자. Reader 이름을 클래스 이름으로 설정합니다.
+     */
+    protected QuerydslPagingItemReader() {
+        setName(ClassUtils.getShortName(QuerydslPagingItemReader.class));
+    }
+
+    /**
+     * QuerydslPagingItemReader 생성자.
      *
      * @param entityManagerFactory EntityManagerFactory 객체
      * @param pageSize             페이징 단위 크기
@@ -50,93 +66,123 @@ public class QuerydslPagingItemReader<T> extends AbstractPagingItemReader<T> {
     public QuerydslPagingItemReader(EntityManagerFactory entityManagerFactory,
         int pageSize,
         Function<JPAQueryFactory, JPAQuery<T>> queryFunction) {
-        this.entityManagerFactory = entityManagerFactory;
-        this.queryFunction = queryFunction;
-        setPageSize(pageSize);
-        setName(ClassUtils.getShortName(QuerydslPagingItemReader.class));
+        this(entityManagerFactory, pageSize, true, queryFunction);
     }
 
     /**
-     * ItemReader를 열고 EntityManager를 초기화합니다.
+     * QuerydslPagingItemReader 생성자 (트랜잭션 설정 가능).
      *
-     * @throws Exception 예외 발생 시 상위 클래스에 전달
+     * @param entityManagerFactory EntityManagerFactory 객체
+     * @param pageSize             페이징 단위 크기
+     * @param transacted           트랜잭션 활성화 여부
+     * @param queryFunction        Querydsl 쿼리를 생성하는 함수
+     */
+    public QuerydslPagingItemReader(EntityManagerFactory entityManagerFactory,
+        int pageSize,
+        boolean transacted,
+        Function<JPAQueryFactory, JPAQuery<T>> queryFunction) {
+        this();
+        this.entityManagerFactory = entityManagerFactory;
+        this.queryFunction = queryFunction;
+        setPageSize(pageSize);
+        setTransacted(transacted);
+    }
+
+    /**
+     * Reader를 열고 EntityManager를 초기화합니다.
+     *
+     * @throws Exception Reader 열기 실패 시 예외 발생
      */
     @Override
     protected void doOpen() throws Exception {
         super.doOpen();
-        entityManager = entityManagerFactory.createEntityManager();
-        if (results == null) {
-            results = new CopyOnWriteArrayList<>();
-        }
+        entityManager = entityManagerFactory.createEntityManager(jpaPropertyMap);
     }
 
     /**
      * 현재 페이지의 데이터를 읽어옵니다.
-     *
-     * @throws IllegalStateException EntityManager가 초기화되지 않았을 경우
      */
     @Override
     protected void doReadPage() {
-        if (entityManager == null) {
-            throw new IllegalStateException("EntityManager is not initialized");
-        }
+        EntityTransaction tx = getTxOrNull();
 
         JPQLQuery<T> query = createQuery()
             .offset((long) getPage() * getPageSize())
             .limit(getPageSize());
 
-        executeQuery(query);
+        initResults();
+
+        fetchQuery(query, tx);
     }
 
     /**
-     * Querydsl 쿼리를 생성합니다.
+     * 트랜잭션이 활성화된 경우 트랜잭션을 반환합니다.
      *
-     * @return JPQLQuery Querydsl 쿼리 객체
+     * @return EntityTransaction 객체 또는 null
      */
-    private JPQLQuery<T> createQuery() {
+    protected EntityTransaction getTxOrNull() {
+        if (transacted) {
+            EntityTransaction tx = entityManager.getTransaction();
+            tx.begin();
+
+            entityManager.flush();
+            entityManager.clear();
+            return tx;
+        }
+
+        return null;
+    }
+
+    /**
+     * Querydsl JPAQuery 객체를 생성합니다.
+     *
+     * @return JPAQuery 객체
+     */
+    protected JPAQuery<T> createQuery() {
         JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         return queryFunction.apply(queryFactory);
     }
 
     /**
-     * 생성된 Querydsl 쿼리를 실행하여 결과를 가져옵니다.
-     *
-     * @param query 실행할 Querydsl 쿼리
+     * 결과를 저장할 리스트를 초기화합니다.
      */
-    private void executeQuery(JPQLQuery<T> query) {
-        try {
-            List<T> queryResults = query.fetch();
+    protected void initResults() {
+        if (CollectionUtils.isEmpty(results)) {
+            results = new CopyOnWriteArrayList<>();
+        } else {
             results.clear();
-            if (transacted) {
-                // 트랜잭션이 활성화된 경우
-                entityManager.getTransaction().begin();
-                results.addAll(queryResults);
-                entityManager.getTransaction().commit();
-            } else {
-                // 트랜잭션이 비활성화된 경우
-                queryResults.forEach(entity -> {
-                    entityManager.detach(entity); // 엔티티를 detach 처리
-                    results.add(entity);
-                });
-            }
-        } catch (Exception e) {
-            if (transacted && entityManager.getTransaction().isActive()) {
-                entityManager.getTransaction().rollback();
-            }
-            throw new RuntimeException("Error executing Querydsl query", e);
         }
     }
 
     /**
-     * ItemReader를 닫고 EntityManager를 종료합니다.
+     * 쿼리를 실행하고 결과를 처리합니다.
      *
-     * @throws Exception 예외 발생 시 상위 클래스에 전달
+     * @param query 실행할 Querydsl 쿼리
+     * @param tx    활성화된 트랜잭션 (있을 경우)
+     */
+    protected void fetchQuery(JPQLQuery<T> query, EntityTransaction tx) {
+        if (transacted) {
+            results.addAll(query.fetch());
+            if (tx != null) {
+                tx.commit();
+            }
+        } else {
+            List<T> queryResult = query.fetch();
+            for (T entity : queryResult) {
+                entityManager.detach(entity);
+                results.add(entity);
+            }
+        }
+    }
+
+    /**
+     * Reader를 닫고 EntityManager를 종료합니다.
+     *
+     * @throws Exception Reader 닫기 실패 시 예외 발생
      */
     @Override
     protected void doClose() throws Exception {
-        if (entityManager != null && entityManager.isOpen()) {
-            entityManager.close();
-        }
+        entityManager.close();
         super.doClose();
     }
 }
