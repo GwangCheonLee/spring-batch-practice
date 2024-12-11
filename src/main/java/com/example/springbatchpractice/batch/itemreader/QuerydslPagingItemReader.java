@@ -6,6 +6,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Function;
 import lombok.Setter;
 import org.springframework.batch.item.database.AbstractPagingItemReader;
@@ -64,6 +65,9 @@ public class QuerydslPagingItemReader<T> extends AbstractPagingItemReader<T> {
     protected void doOpen() throws Exception {
         super.doOpen();
         entityManager = entityManagerFactory.createEntityManager();
+        if (results == null) {
+            results = new CopyOnWriteArrayList<>();
+        }
     }
 
     /**
