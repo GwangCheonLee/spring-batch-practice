@@ -15,17 +15,6 @@ spring:
       password: ${ANOTHER_DATABASE_PASSWORD}
       driver-class-name: ${ANOTHER_DATABASE_DRIVER}
 
-  quartz:
-    job-store-type: jdbc
-    jdbc:
-      initialize-schema: always
-    properties:
-      org:
-        quartz:
-          jobStore:
-            driverDelegateClass: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
-            useProperties: false
-
   batch:
     job:
       enabled: false
