@@ -1,9 +1,10 @@
 package com.example.springbatchpractice.common.config;
 
+import com.example.springbatchpractice.common.property.AnotherDataSourceProperties;
 import jakarta.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
@@ -19,27 +20,18 @@ import org.springframework.transaction.PlatformTransactionManager;
     entityManagerFactoryRef = "anotherEntityManagerFactory",
     transactionManagerRef = "anotherTransactionManager"
 )
+@RequiredArgsConstructor
 public class AnotherDataSourceConfig {
 
-    @Value("${spring.datasource.another.url}")
-    private String anotherDbUrl;
-
-    @Value("${spring.datasource.another.username}")
-    private String anotherDbUsername;
-
-    @Value("${spring.datasource.another.password}")
-    private String anotherDbPassword;
-
-    @Value("${spring.datasource.another.driver-class-name}")
-    private String anotherDbDriverClassName;
+    private final AnotherDataSourceProperties properties;
 
     @Bean(name = "anotherDataSource")
     public DataSource anotherDataSource() {
         return DataSourceBuilder.create()
-            .driverClassName(anotherDbDriverClassName)
-            .url(anotherDbUrl)
-            .username(anotherDbUsername)
-            .password(anotherDbPassword)
+            .driverClassName(properties.getDriverClassName())
+            .url(properties.getUrl())
+            .username(properties.getUsername())
+            .password(properties.getPassword())
             .build();
     }
 

@@ -1,9 +1,10 @@
 package com.example.springbatchpractice.common.config;
 
+import com.example.springbatchpractice.common.property.BatchDataSourceProperties;
 import jakarta.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
@@ -20,28 +21,20 @@ import org.springframework.transaction.PlatformTransactionManager;
     entityManagerFactoryRef = "batchEntityManagerFactory",
     transactionManagerRef = "batchTransactionManager"
 )
+@RequiredArgsConstructor
 public class BatchDataSourceConfig {
 
-    @Value("${spring.datasource.batch.url}")
-    private String batchDbUrl;
+    private final BatchDataSourceProperties properties;
 
-    @Value("${spring.datasource.batch.username}")
-    private String batchDbUsername;
-
-    @Value("${spring.datasource.batch.password}")
-    private String batchDbPassword;
-
-    @Value("${spring.datasource.batch.driver-class-name}")
-    private String batchDbDriverClassName;
 
     @Primary
     @Bean(name = "batchDataSource")
     public DataSource batchDataSource() {
         return DataSourceBuilder.create()
-            .driverClassName(batchDbDriverClassName)
-            .url(batchDbUrl)
-            .username(batchDbUsername)
-            .password(batchDbPassword)
+            .driverClassName(properties.getDriverClassName())
+            .url(properties.getUrl())
+            .username(properties.getUsername())
+            .password(properties.getPassword())
             .build();
     }
 
