@@ -20,3 +20,4 @@ spring:
       enabled: false
     jdbc:
       initialize-schema: always
+    chunk-size: ${CHUNK_SIZE:100}
