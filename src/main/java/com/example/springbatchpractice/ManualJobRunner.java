@@ -18,6 +18,7 @@ public class ManualJobRunner implements CommandLineRunner {
 
     private final Job simpleChunkJob;
     private final Job simpleTaskletJob;
+    private final Job querydslNoOffsetPagingItemReaderJob;
     private final JobLauncher jobLauncher;
 
     @Override
@@ -31,5 +32,6 @@ public class ManualJobRunner implements CommandLineRunner {
 
         jobLauncher.run(simpleChunkJob, jobParameters);
         jobLauncher.run(simpleTaskletJob, jobParameters);
+        jobLauncher.run(querydslNoOffsetPagingItemReaderJob, jobParameters);
     }
 }
